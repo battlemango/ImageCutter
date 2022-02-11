@@ -28,20 +28,60 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.lblFolderName = new System.Windows.Forms.Label();
+            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
+            // 
+            // lblFolderName
+            // 
+            this.lblFolderName.AutoSize = true;
+            this.lblFolderName.Location = new System.Drawing.Point(27, 28);
+            this.lblFolderName.Name = "lblFolderName";
+            this.lblFolderName.Size = new System.Drawing.Size(38, 12);
+            this.lblFolderName.TabIndex = 0;
+            this.lblFolderName.Text = "label1";
+            // 
+            // listBox1
+            // 
+            this.listBox1.AllowDrop = true;
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.ItemHeight = 12;
+            this.listBox1.Location = new System.Drawing.Point(23, 67);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(395, 544);
+            this.listBox1.TabIndex = 1;
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(449, 57);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(848, 554);
+            this.pictureBox1.TabIndex = 2;
+            this.pictureBox1.TabStop = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(884, 503);
+            this.ClientSize = new System.Drawing.Size(1340, 651);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.lblFolderName);
             this.Name = "Form1";
             this.Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
+
+        private System.Windows.Forms.Label lblFolderName;
+        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }
 
