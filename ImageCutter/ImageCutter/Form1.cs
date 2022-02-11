@@ -17,8 +17,6 @@ namespace ImageCutter
         {
             InitializeComponent();
             this.listBox1.SelectedIndexChanged += new EventHandler(this.listBox1_SelectedIndexChanged);
-            this.listBox1.DragDrop += new System.Windows.Forms.DragEventHandler(this.listBox1_DragDrop);
-            this.listBox1.DragEnter += new System.Windows.Forms.DragEventHandler(this.listBox1_DragEnter);
         }
 
         private void listBox1_DragDrop(object sender, DragEventArgs e)
@@ -45,7 +43,7 @@ namespace ImageCutter
                     string filename = Path.GetFileNameWithoutExtension(fullpath);
                     string fileExtension = Path.GetExtension(fullpath);
 
-                    listBox1.Items.Add(filename);
+                    listBox1.Items.Add(fullpath);
                 }
             }
         }
@@ -64,7 +62,32 @@ namespace ImageCutter
 
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            Console.WriteLine(listBox1.SelectedItem.ToString());
+            //Console.WriteLine(listBox1.SelectedItem.ToString());
+            pictureBox1.Image = LoadBitmap(listBox1.SelectedItem.ToString());
+        }
+
+        private Bitmap LoadBitmap(string path)
+        {
+            if (File.Exists(path))
+            {
+                FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read);
+                if(stream == null)
+                {
+                    return null;
+                }
+                BinaryReader reader = new BinaryReader(stream);
+                if(reader == null)
+                {
+                    return null;
+                }
+
+                MemoryStream memoryStream = new MemoryStream(reader.ReadBytes((int)stream.Length));
+                return new Bitmap(memoryStream);
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
