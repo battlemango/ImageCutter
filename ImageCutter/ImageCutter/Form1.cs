@@ -27,6 +27,7 @@ namespace ImageCutter
         public Form1()
         {
             InitializeComponent();
+            KeyPreview = true;
             imageItemList = new List<ImageItem>();
 
             this.listBox1.SelectedIndexChanged += new EventHandler(this.listBox1_SelectedIndexChanged);
@@ -81,6 +82,18 @@ namespace ImageCutter
                 }
             }
             return null;
+        }
+
+        private int findImageItemIndexByName(string name)
+        {
+            for(int i=0; i<imageItemList.Count; i++)
+            {
+                if (imageItemList[i].getName() == name)
+                {
+                    return i;
+                }
+            }
+            return -1;
         }
 
         private void listBox1_DragEnter(object sender, DragEventArgs e)
@@ -167,16 +180,17 @@ namespace ImageCutter
 
         private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
         {
+            if (!isMouseDown)
+            {
+                return;
+            }
             if (selectedImageItem == null)
             {
                 Console.WriteLine("pictureBox1_MouseMove - no selectedImageItem");
                 return;
             }
-            if (isMouseDown)
-            {
-                selectedImageItem.endRect(e.X, e.Y);
-                pictureBox1.Refresh();
-            }
+            selectedImageItem.endRect(e.X, e.Y);
+            pictureBox1.Refresh();
         }
 
         private void saveModifiedBitmap()
@@ -196,14 +210,16 @@ namespace ImageCutter
             }
         }
 
-        public Bitmap cropAtRect(Bitmap b, Rectangle r)
+        public Bitmap cropAtRect(Bitmap orgImg, Rectangle sRect)
         {
-            Bitmap nb = new Bitmap(r.Width, r.Height);
-            using (Graphics g = Graphics.FromImage(nb))
+            Rectangle destRect = new Rectangle(Point.Empty, sRect.Size);
+
+            var cropImage = new Bitmap(destRect.Width, destRect.Height);
+            using (var graphics = Graphics.FromImage(cropImage))
             {
-                g.DrawImage(b, -r.X, -r.Y);
-                return nb;
+                graphics.DrawImage(orgImg, destRect, sRect, GraphicsUnit.Pixel);
             }
+            return cropImage;
         }
 
         private void removeModifiedBitmap()
@@ -221,6 +237,41 @@ namespace ImageCutter
         private void btnUnSave_Click(object sender, EventArgs e)
         {
             removeModifiedBitmap();
+        }
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.D:
+
+                    if(selectedImageItem != null)
+                    {
+                        int index = findImageItemIndexByName(selectedImageItem.getName());
+                        index++;
+                        if(index >= listBox1.Items.Count)
+                        {
+                            index = 0;
+                        }
+
+                        listBox1.SelectedItem = listBox1.Items[index];
+                    }                    
+                    break;
+                case Keys.A:
+
+                    if (selectedImageItem != null)
+                    {
+                        int index = findImageItemIndexByName(selectedImageItem.getName());
+                        index--;
+                        if (index <= 0)
+                        {
+                            index = listBox1.Items.Count-1;
+                        }
+
+                        listBox1.SelectedItem = listBox1.Items[index];
+                    }
+                    break;
+            }
         }
     }
 }
