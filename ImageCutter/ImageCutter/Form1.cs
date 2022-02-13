@@ -21,6 +21,8 @@ namespace ImageCutter
         Bitmap modifiedBitmap = null;
 
         private List<ImageItem> imageItemList;
+        private ImageItem selectedImageItem = null;
+        private bool isMouseDown = false;
 
         public Form1()
         {
@@ -28,14 +30,13 @@ namespace ImageCutter
             imageItemList = new List<ImageItem>();
 
             this.listBox1.SelectedIndexChanged += new EventHandler(this.listBox1_SelectedIndexChanged);
+            pictureBox1.Paint += new PaintEventHandler(listBox1_Paint);
         }
 
         private void listBox1_DragDrop(object sender, DragEventArgs e)
         {
             if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                listBox1.Items.Clear();
-
                 string[] files = e.Data.GetData(DataFormats.FileDrop, true) as string[];
                 if(files.Length < 1)
                 {
@@ -55,14 +56,7 @@ namespace ImageCutter
                 imageItemList.Clear();
                 foreach (string f in innerfiles)
                 {
-
-                    string fullpath = f;
-                    string filepath = Path.GetDirectoryName(fullpath).ToLower();
-                    string filename = Path.GetFileNameWithoutExtension(fullpath);
-                    string fileExtension = Path.GetExtension(fullpath);
-
                     imageItemList.Add(new ImageItem(f));
-                    //listBox1.Items.Add(fullpath);
                 }
                 updateListBox();
             }
@@ -101,25 +95,35 @@ namespace ImageCutter
             }
         }
 
+        private void listBox1_Paint(object sender, PaintEventArgs e)
+        {
+            //Graphics g = this.CreateGraphics();
+            if(selectedImageItem == null)
+            {
+                return;
+            }
+            Graphics g = e.Graphics;
+            //g.DrawRectangle(new Pen(Brushes.Red), new Rectangle(15, 15, 100, 100));
+
+            if (selectedImageItem.isExistRect)
+            {
+                g.DrawRectangle(new Pen(Brushes.Red), selectedImageItem.getRect());
+            }
+        }
+
         private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(modifiedBitmap != null)
-            {
-                modifiedBitmap.Save(newFolderPath + "\\a.jpg", ImageFormat.Jpeg);
-                modifiedBitmap.Dispose();
-                modifiedBitmap = null;
-            }
-
-            ImageItem imageItem = findImageItemByName(listBox1.SelectedItem.ToString());
-            if(imageItem == null)
+            selectedImageItem = findImageItemByName(listBox1.SelectedItem.ToString());
+            if(selectedImageItem == null)
             {
                 Console.WriteLine("imageItem is null");
                 return;
             }
 
-            Bitmap bitmap = new Bitmap(imageItem.path);
-            //무엇을 기준으로? width, height각각 기준을 잡아야한다. 둘중에 큰걸 찾는다
-            //
+            selectedImageItem.select();
+            updateListBox();
+
+            Bitmap bitmap = new Bitmap(selectedImageItem.path);
             float bigger = bitmap.Width < bitmap.Height ? bitmap.Height : bitmap.Width;
             if(bigger > MAX_SIZE)
             {
@@ -131,6 +135,92 @@ namespace ImageCutter
             modifiedBitmap = bitmap;
             pictureBox1.Image = bitmap;
             //pictureBox1.Image = new Bitmap(listBox1.SelectedItem.ToString());
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (selectedImageItem == null)
+            {
+                Console.WriteLine("pictureBox1_MouseDown - no selectedImageItem");
+                return;
+            }
+            isMouseDown = true;
+            selectedImageItem.startRect(e.X, e.Y);
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        {
+            if (selectedImageItem == null)
+            {
+                Console.WriteLine("pictureBox1_MouseUp - no selectedImageItem");
+                return;
+            }
+            if (isMouseDown)
+            {
+                selectedImageItem.endRect(e.X, e.Y);
+                saveModifiedBitmap();
+                pictureBox1.Refresh();
+            }
+
+            isMouseDown = false;
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (selectedImageItem == null)
+            {
+                Console.WriteLine("pictureBox1_MouseMove - no selectedImageItem");
+                return;
+            }
+            if (isMouseDown)
+            {
+                selectedImageItem.endRect(e.X, e.Y);
+                pictureBox1.Refresh();
+            }
+        }
+
+        private void saveModifiedBitmap()
+        {
+            if (selectedImageItem == null)
+            {
+                Console.WriteLine("saveModifiedBitmap - no selectedImageItem");
+                return;
+            }
+            if(modifiedBitmap != null)
+            {
+                Bitmap cropBitmap = cropAtRect(modifiedBitmap, selectedImageItem.getRect());
+                cropBitmap.Save(newFolderPath + "\\"+ selectedImageItem.filename + ".jpg", ImageFormat.Jpeg);
+                cropBitmap.Dispose();
+                cropBitmap = null;
+                selectedImageItem.save();
+            }
+        }
+
+        public Bitmap cropAtRect(Bitmap b, Rectangle r)
+        {
+            Bitmap nb = new Bitmap(r.Width, r.Height);
+            using (Graphics g = Graphics.FromImage(nb))
+            {
+                g.DrawImage(b, -r.X, -r.Y);
+                return nb;
+            }
+        }
+
+        private void removeModifiedBitmap()
+        {
+            if (selectedImageItem == null)
+            {
+                Console.WriteLine("saveModifiedBitmap - no selectedImageItem");
+                return;
+            }
+            FileUtils.removeFile(newFolderPath + "\\" + selectedImageItem.filename + ".jpg");
+
+            selectedImageItem.unSave();
+        }
+
+        private void btnUnSave_Click(object sender, EventArgs e)
+        {
+            removeModifiedBitmap();
         }
     }
 }
