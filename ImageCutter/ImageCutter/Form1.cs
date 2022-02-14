@@ -136,17 +136,24 @@ namespace ImageCutter
             selectedImageItem.select();
             updateListBox();
 
-            Bitmap bitmap = new Bitmap(selectedImageItem.path);
-            float bigger = bitmap.Width < bitmap.Height ? bitmap.Height : bitmap.Width;
-            if(bigger > MAX_SIZE)
+            try
             {
-                Size resize = new Size((int)(bitmap.Width/bigger * MAX_SIZE), (int)(bitmap.Height / bigger * MAX_SIZE));
-                bitmap = new Bitmap(bitmap, resize);
+                Bitmap bitmap = new Bitmap(selectedImageItem.path);
+                float bigger = bitmap.Width < bitmap.Height ? bitmap.Height : bitmap.Width;
+                if (bigger > MAX_SIZE)
+                {
+                    Size resize = new Size((int)(bitmap.Width / bigger * MAX_SIZE), (int)(bitmap.Height / bigger * MAX_SIZE));
+                    bitmap = new Bitmap(bitmap, resize);
 
+                }
+
+                modifiedBitmap = bitmap;
+                pictureBox1.Image = bitmap;
+            } catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
             }
-
-            modifiedBitmap = bitmap;
-            pictureBox1.Image = bitmap;
+            
             //pictureBox1.Image = new Bitmap(listBox1.SelectedItem.ToString());
         }
 
@@ -202,6 +209,10 @@ namespace ImageCutter
             }
             if(modifiedBitmap != null)
             {
+                if(selectedImageItem.getRect().Width < 5)
+                {
+                    return;
+                }
                 Bitmap cropBitmap = cropAtRect(modifiedBitmap, selectedImageItem.getRect());
                 cropBitmap.Save(newFolderPath + "\\"+ selectedImageItem.filename + ".jpg", ImageFormat.Jpeg);
                 cropBitmap.Dispose();

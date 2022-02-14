@@ -88,6 +88,13 @@ namespace ImageCutter.src
             int w = Math.Abs(pointStart.X - pointEnd.X);
             int h = Math.Abs(pointStart.Y - pointEnd.Y);
 
+
+            if (x <= 0) x = 0;
+            if (y <= 0) y = 0;
+
+            if (w <= 1) w = 1;
+            if (h <= 1) h = 1;
+
             Console.WriteLine("w : " + w + ", h : " + h + ", x : " + x + ", y : " + y);
 
             return new Rectangle(x, y, w, h);
